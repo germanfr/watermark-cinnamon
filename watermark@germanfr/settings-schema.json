@@ -1,0 +1,50 @@
+{
+	"icon-name": {
+		"type": "iconfilechooser",
+		"description": "Watermark background",
+		"default": "cinnamon"
+	},
+
+	"icon-size": {
+		"type": "spinbutton",
+		"description" : "Size",
+		"default": 128,
+		"min": 32,
+		"max": 512,
+		"step": 8,
+		"units": "px"
+	},
+
+	"position-x": {
+		"type": "scale",
+		"description" : "Position x",
+		"default": 50,
+		"min": 0,
+		"max": 100,
+		"step": 1
+	},
+
+	"position-y": {
+		"type": "scale",
+		"description" : "Position y",
+		"default": 50,
+		"min": 0,
+		"max": 100,
+		"step": 1
+	},
+
+	"icon-alpha": {
+		"type": "scale",
+		"description" : "Opacity",
+		"default" : 15,
+		"min": 5,
+		"max": 100,
+		"step": 1
+	},
+
+	"icon-color" : {
+		"type": "colorchooser",
+		"description" : "Color",
+		"default" : "rgb(255,255,255)"
+	}
+}

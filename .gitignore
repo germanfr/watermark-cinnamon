@@ -1,0 +1,5 @@
+# Ignore generated zip files for distribution
+*.zip
+
+# Binary translation output files
+*.mo
