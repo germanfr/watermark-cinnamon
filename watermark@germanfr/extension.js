@@ -1,6 +1,6 @@
 /*
 * Watermark - Cinnamon desktop extension
-* Place a watermark icon on the desktop
+* Place a watermark on the desktop
 * Copyright (C) 2018  Germán Franco Dorca
 *
 * This program is free software: you can redistribute it and/or modify
