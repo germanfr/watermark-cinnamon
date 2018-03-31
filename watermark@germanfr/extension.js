@@ -66,14 +66,13 @@ MyExtension.prototype = {
 	},
 
 	_clear_watermarks: function() {
-		for(let wm of this.watermark) {
-			this.watermark.destroy();
+		for(let wm of this.watermarks) {
+			wm.destroy();
 		}
 		this.watermarks = [];
 	},
 
 	disable: function() {
-		this.settings.unbindAll();
 		this._clear_watermarks();
 	},
 
