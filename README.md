@@ -4,6 +4,14 @@ Place a watermark on the desktop
 
 [![Screenshot](screenshot.png)][repo]
 
+## Included watermarks
+ * Cinnamon
+ * Manjaro
+ * Manjaro Text (Manjaro logo with text)
+ * Arch
+ * All Gtk icons, including *start-here*
+ * Virtually **any image from a custom location**
+
 ## Changelog
 See the list of changes on Github:  [https://github.com/germanfr/watermark-cinnamon/commits/master][commits].
 
