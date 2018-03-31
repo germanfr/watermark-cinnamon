@@ -17,15 +17,18 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+const Clutter = imports.gi.Clutter;
+const Cogl = imports.gi.Cogl;
+const GdkPixbuf = imports.gi.GdkPixbuf;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
+const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const St = imports.gi.St;
 
-const Main = imports.ui.main;
-
 const ERROR_ICON_NAME = 'face-sad-symbolic';
+const DEFAULT_ICON_SIZE = 128;
 
 function MyExtension(meta) {
 	this._init(meta);
@@ -45,7 +48,6 @@ MyExtension.prototype = {
 		this.settings.bind('position-x', 'position_x', this.on_settings_updated);
 		this.settings.bind('position-y', 'position_y', this.on_settings_updated);
 		this.settings.bind('icon-alpha', 'icon_alpha', this.on_settings_updated);
-		this.settings.bind('icon-color', 'icon_color', this.on_settings_updated);
 
 		// FIXME: Not firing!
 		this.monitorsChangedId = global.screen.connect('monitors-changed', () => {
@@ -54,14 +56,12 @@ MyExtension.prototype = {
 		});
 
 		this._init_watermarks();
-		this.on_settings_updated();
 	},
 
 	_init_watermarks: function() {
 		for(let i = global.screen.get_n_monitors()-1; i >= 0; i--) {
 			let monitor = Main.layoutManager.monitors[i];
 			this.watermarks.push(new Watermark(monitor, this));
-
 		}
 	},
 
@@ -92,20 +92,25 @@ Watermark.prototype = {
 		this.manager = manager;
 		this.monitor = monitor;
 
-		this.actor = new St.Icon({ icon_name: manager.icon_name,
-		                           icon_size: manager.icon_size,
-		                           icon_type: St.IconType.SYMBOLIC , x_expand: true, y_expand: true });
-		this.update_style();
+		this.actor = new St.Bin();
+		this.actor.style = 'color: white;';
+		this.icon = null;
 
 		global.bottom_window_group.insert_child_at_index(this.actor, 0);
-		this.update_position();
+
+		/* Position can't be calculated until size is set, and that is async */
+		this.actor.connect('queue-redraw', () => this.update_position());
+		this.update();
 	},
 
 	update: function() {
-		this.set_icon(this.manager.icon_name);
-		this.actor.set_icon_size(this.manager.icon_size);
-		this.update_style();
-		this.update_position();
+		if(this.icon) {
+			this.icon.destroy();
+		}
+		this.icon = this.get_icon(this.manager.icon_name, this.manager.icon_size);
+		this.actor.set_child(this.icon);
+
+		this.actor.set_opacity(this.manager.icon_alpha * 255 / 100);
 	},
 
 	update_position: function() {
@@ -115,31 +120,40 @@ Watermark.prototype = {
 		this.actor.set_position(x, y);
 	},
 
-	update_style: function() {
-		this.actor.set_opacity(this.manager.icon_alpha * 255 / 100);
-		this.actor.style = 'color:' + this.manager.icon_color;
+	get_icon: function(icon, size) {
+		let icon_size = size > 0 ? size : DEFAULT_ICON_SIZE;
+		if(Gtk.IconTheme.get_default().has_icon(icon)) { // Icon name
+			return new St.Icon({ icon_name: icon, icon_size, icon_type: St.IconType.SYMBOLIC });
+		} else { // Image path
+			if(GLib.file_test(icon, GLib.FileTest.EXISTS))
+				return this.get_image(icon, size);
+
+			let xlet_icon = this.manager.meta.path + '/icons/' + icon + '-symbolic.svg';
+			if(GLib.file_test(xlet_icon, GLib.FileTest.EXISTS))
+				return this.get_image(xlet_icon, size);
+		}
+
+		global.logError(this.manager.meta + ": watermark file not found (" + icon + ")");
+		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size, icon_type: St.IconType.SYMBOLIC });
 	},
 
-	set_icon: function(icon) {
-		if(GLib.file_test(icon, GLib.FileTest.EXISTS)) { // Icon path
-			let file = Gio.file_new_for_path(icon);
-			this.actor.set_gicon(new Gio.FileIcon({ file: file }));
-		} else if(Gtk.IconTheme.get_default().has_icon(icon)) { // Icon name
-			this.actor.set_icon_name(icon);
-		} else {
-			let xlet_icon = this.manager.meta.path + '/icons/' + icon + '-symbolic.svg';
-			if(GLib.file_test(xlet_icon, GLib.FileTest.EXISTS)) {
-				let file = Gio.file_new_for_path(xlet_icon);
-				this.actor.set_gicon(new Gio.FileIcon({ file: file }));
-			} else {
-				this.actor.set_icon_name(ERROR_ICON_NAME);
-			}
-		}
+	get_image: function(path, size) {
+		let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+		let height = size > 0 ? size : pixbuf.get_height();
+		let width = height * pixbuf.get_width() / pixbuf.get_height();
+		let image = new Clutter.Image();
+		image.set_data(pixbuf.get_pixels(),
+		               pixbuf.get_has_alpha() ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,
+		               pixbuf.get_width(),
+		               pixbuf.get_height(),
+		               pixbuf.get_rowstride());
+		return new Clutter.Actor({ content: image, width, height });
 	},
 
 	destroy: function() {
 		this.actor.destroy();
 		this.actor = null;
+		this.manager = null;
 	}
 };
 

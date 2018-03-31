@@ -1,23 +1,32 @@
 {
+	"section0": {
+		"type": "section",
+		"description": "Appearance"
+	},
+
 	"icon-name": {
 		"type": "iconfilechooser",
 		"description": "Watermark background",
 		"default": "cinnamon"
 	},
 
-	"icon-size": {
-		"type": "spinbutton",
-		"description" : "Size",
-		"default": 128,
-		"min": 32,
-		"max": 512,
-		"step": 8,
-		"units": "px"
+	"icon-alpha": {
+		"type": "scale",
+		"description" : "Opacity (%)",
+		"default" : 20,
+		"min": 5,
+		"max": 100,
+		"step": 1
+	},
+
+	"section1": {
+		"type": "section",
+		"description": "Position"
 	},
 
 	"position-x": {
 		"type": "scale",
-		"description" : "Position x",
+		"description" : "Position x (%)",
 		"default": 50,
 		"min": 0,
 		"max": 100,
@@ -26,25 +35,30 @@
 
 	"position-y": {
 		"type": "scale",
-		"description" : "Position y",
+		"description" : "Position y (%)",
 		"default": 50,
 		"min": 0,
 		"max": 100,
 		"step": 1
 	},
 
-	"icon-alpha": {
-		"type": "scale",
-		"description" : "Opacity",
-		"default" : 15,
-		"min": 5,
-		"max": 100,
-		"step": 1
+	"section2": {
+		"type": "section",
+		"description": "Size"
 	},
 
-	"icon-color" : {
-		"type": "colorchooser",
-		"description" : "Color",
-		"default" : "rgb(255,255,255)"
+	"size-label": {
+		"type": "label",
+		"description": "Use zero to not scale the images (by default)"
+	},
+
+	"icon-size": {
+		"type": "spinbutton",
+		"description" : "Image size",
+		"default": 0,
+		"min": 0,
+		"max": 512,
+		"step": 8,
+		"units": "px"
 	}
 }
