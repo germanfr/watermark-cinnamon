@@ -7,7 +7,7 @@
 	"icon-name": {
 		"type": "iconfilechooser",
 		"description": "Watermark background",
-		"default": "cinnamon"
+		"default": "Cinnamon"
 	},
 
 	"icon-alpha": {
