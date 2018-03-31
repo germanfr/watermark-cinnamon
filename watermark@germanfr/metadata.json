@@ -3,7 +3,6 @@
 	"uuid": "watermark@germanfr",
 	"version": 0.1,
 	"description": "Place a watermark on the desktop.",
-	"icon": "start-here-symbolic",
 	"url": "https://github.com/germanfr/watermark-cinnamon",
 	"cinnamon-version": [
 		"3.4",
