@@ -43,7 +43,7 @@ MyExtension.prototype = {
 	enable: function() {
 		this.settings = new Settings.ExtensionSettings(this, this.meta.uuid);
 		this.settings.bind('icon-name', 'icon_name', this.on_settings_updated);
-		this.settings.bind('icon-size', 'icon_size', this.on_settings_updated);
+		this.settings.bind('scale', 'scale', this.on_settings_updated);
 		this.settings.bind('position-x', 'position_x', this.on_settings_updated);
 		this.settings.bind('position-y', 'position_y', this.on_settings_updated);
 		this.settings.bind('icon-alpha', 'icon_alpha', this.on_settings_updated);
@@ -105,7 +105,7 @@ Watermark.prototype = {
 		if(this.icon) {
 			this.icon.destroy();
 		}
-		this.icon = this.get_icon(this.manager.icon_name, this.manager.icon_size);
+		this.icon = this.get_icon(this.manager.icon_name, this.manager.scale);
 		this.actor.set_child(this.icon);
 
 		this.actor.set_opacity(this.manager.icon_alpha * 255 / 100);
@@ -118,27 +118,27 @@ Watermark.prototype = {
 		this.actor.set_position(x, y);
 	},
 
-	get_icon: function(icon, size) {
-		let icon_size = size > 0 ? size : DEFAULT_ICON_SIZE;
+	get_icon: function(icon, scale) {
 		if(Gtk.IconTheme.get_default().has_icon(icon)) { // Icon name
+			let icon_size = Math.floor(DEFAULT_ICON_SIZE * scale / 100);
 			return new St.Icon({ icon_name: icon, icon_size, icon_type: St.IconType.SYMBOLIC });
 		} else { // Image path
 			if(GLib.file_test(icon, GLib.FileTest.EXISTS))
-				return this.get_image(icon, size);
+				return this.get_image(icon, scale);
 
 			let xlet_icon = this.manager.meta.path + '/icons/' + icon.toLowerCase().replace(' ', '-') + '-symbolic.svg';
 			if(GLib.file_test(xlet_icon, GLib.FileTest.EXISTS))
-				return this.get_image(xlet_icon, size);
+				return this.get_image(xlet_icon, scale);
 		}
 
 		global.logError(this.manager.meta + ": watermark file not found (" + icon + ")");
-		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size, icon_type: St.IconType.SYMBOLIC });
+		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size: DEFAULT_ICON_SIZE, icon_type: St.IconType.SYMBOLIC });
 	},
 
-	get_image: function(path, size) {
+	get_image: function(path, scale) {
 		let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
-		let height = size > 0 ? size : pixbuf.get_height();
-		let width = height * pixbuf.get_width() / pixbuf.get_height();
+		let height = Math.floor(pixbuf.get_height() * scale / 100);
+		let width = Math.round(height * pixbuf.get_width() / pixbuf.get_height());
 		let image = new Clutter.Image();
 		image.set_data(pixbuf.get_pixels(),
 		               pixbuf.get_has_alpha() ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,

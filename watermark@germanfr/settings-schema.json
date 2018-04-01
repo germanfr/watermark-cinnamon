@@ -21,7 +21,7 @@
 
 	"section1": {
 		"type": "section",
-		"description": "Position"
+		"description": "Position and size"
 	},
 
 	"position-x": {
@@ -42,23 +42,12 @@
 		"step": 1
 	},
 
-	"section2": {
-		"type": "section",
-		"description": "Size"
-	},
-
-	"size-label": {
-		"type": "label",
-		"description": "Use zero to not scale the images (by default)"
-	},
-
-	"icon-size": {
-		"type": "spinbutton",
-		"description" : "Image size",
-		"default": 0,
+	"scale": {
+		"type": "scale",
+		"description" : "Scale (%) (it may look blurry)",
+		"default": 100,
 		"min": 0,
-		"max": 512,
-		"step": 8,
-		"units": "px"
+		"max": 200,
+		"step": 1
 	}
 }
