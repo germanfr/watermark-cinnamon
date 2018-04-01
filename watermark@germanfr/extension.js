@@ -114,8 +114,7 @@ Watermark.prototype = {
 	update_position: function() {
 		let x = this.monitor.x + (this.monitor.width - this.actor.width) * this.manager.position_x / 100;
 		let y = this.monitor.y + (this.monitor.height - this.actor.height) * this.manager.position_y / 100;
-
-		this.actor.set_position(x, y);
+		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
 	get_icon: function(icon, scale) {
