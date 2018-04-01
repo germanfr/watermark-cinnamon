@@ -36,10 +36,11 @@ package_files=(
     "$UUID/po/"
     "$UUID/icons/"
     "$UUID/icon.png"
+    "$UUID/icon.svg"
     "$UUID/stylesheet.css"
 )
 
-# Files that need to be moved into the $uuid folder
+# Files that need to be moved into the $UUID folder
 extra_files=(
     'LICENSE'
     'README.md'
@@ -68,7 +69,7 @@ install_theme () {
 
         cinnamon-settings ${xlet_type}s &> /dev/null
     fi
-    
+
     echo "Xlet installed into $install_dir"
 }
 
@@ -142,17 +143,16 @@ submit_to_spices () {
     spices_package &> /dev/null
     mv "$zip_name" "../spices-${xlet_type}s/$UUID/"
     cd "../spices-${xlet_type}s/$UUID/"
-    
+
     git checkout master
     git pull linuxmint master
     git branch -D "$UUID"
     git checkout -b "$UUID"
-    
-    mkdir -p $UUID/files/
+
     rm -rf files/*
     unzip "$zip_name" -d files/ > /dev/null
     rm "$zip_name"
-    
+
     git add files/
     git status
     git commit -m "Update $name v$version ($UUID)
