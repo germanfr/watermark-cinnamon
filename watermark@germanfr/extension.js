@@ -49,7 +49,6 @@ MyExtension.prototype = {
 		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
 		this.settings.bind('size', 'size', this.on_settings_updated);
 
-		// FIXME: Not firing!
 		this.monitorsChangedId = global.screen.connect('monitors-changed', () => {
 			this._clear_watermarks();
 			this._init_watermarks();
