@@ -122,20 +122,30 @@ Watermark.prototype = {
 			let icon_size = Math.floor(DEFAULT_ICON_SIZE * scale / 100);
 			return new St.Icon({ icon_name: icon, icon_size, icon_type: St.IconType.SYMBOLIC });
 		} else { // Image path
-			if(GLib.file_test(icon, GLib.FileTest.EXISTS))
-				return this.get_image(icon, scale);
+			if(GLib.file_test(icon, GLib.FileTest.IS_REGULAR)) {
+				let image = this.get_image(icon, scale);
+				if(image) return image;
+			}
 
 			let xlet_icon = this.manager.meta.path + '/icons/' + icon.toLowerCase().replace(' ', '-') + '-symbolic.svg';
-			if(GLib.file_test(xlet_icon, GLib.FileTest.EXISTS))
-				return this.get_image(xlet_icon, scale);
+			if(GLib.file_test(xlet_icon, GLib.FileTest.IS_REGULAR)) {
+				let image = this.get_image(xlet_icon, scale);
+				if(image) return image;
+			}
 		}
 
-		global.logError(this.manager.meta + ": watermark file not found (" + icon + ")");
+		global.logError(this.manager.meta.uuid + ": watermark file not found (" + icon + ")");
 		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size: DEFAULT_ICON_SIZE, icon_type: St.IconType.SYMBOLIC });
 	},
 
 	get_image: function(path, scale) {
-		let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+		let pixbuf;
+		try {
+			pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+		} catch(e) {
+			return null;
+		}
+
 		let height = Math.floor(pixbuf.get_height() * scale / 100);
 		let width = Math.round(height * pixbuf.get_width() / pixbuf.get_height());
 		let image = new Clutter.Image();
