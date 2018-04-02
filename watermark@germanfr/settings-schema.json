@@ -4,13 +4,13 @@
 		"description": "Appearance"
 	},
 
-	"icon-name": {
+	"path-name": {
 		"type": "iconfilechooser",
-		"description": "Watermark background",
+		"description": "Watermark icon or image",
 		"default": "Cinnamon"
 	},
 
-	"icon-alpha": {
+	"alpha": {
 		"type": "scale",
 		"description" : "Opacity (%)",
 		"default" : 20,
@@ -53,7 +53,7 @@
 	    "default": false
 	},
 
-	"icon-size": {
+	"size": {
 		"type": "spinbutton",
 		"description" : "Size",
 		"default": 128,

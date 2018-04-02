@@ -42,12 +42,12 @@ MyExtension.prototype = {
 
 	enable: function() {
 		this.settings = new Settings.ExtensionSettings(this, this.meta.uuid);
-		this.settings.bind('icon-name', 'icon_name', this.on_settings_updated);
-		this.settings.bind('icon-alpha', 'icon_alpha', this.on_settings_updated);
+		this.settings.bind('path-name', 'path_name', this.on_settings_updated);
+		this.settings.bind('alpha', 'alpha', this.on_settings_updated);
 		this.settings.bind('position-x', 'position_x', this.on_settings_updated);
 		this.settings.bind('position-y', 'position_y', this.on_settings_updated);
 		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
-		this.settings.bind('icon-size', 'icon_size', this.on_settings_updated);
+		this.settings.bind('size', 'size', this.on_settings_updated);
 
 		// FIXME: Not firing!
 		this.monitorsChangedId = global.screen.connect('monitors-changed', () => {
@@ -93,7 +93,7 @@ Watermark.prototype = {
 
 		this.actor = new St.Bin();
 		this.actor.style = 'color: white;';
-		this.icon = null;
+		this.watermark = null;
 
 		global.bottom_window_group.insert_child_at_index(this.actor, 0);
 
@@ -103,13 +103,13 @@ Watermark.prototype = {
 	},
 
 	update: function() {
-		if(this.icon) {
-			this.icon.destroy();
+		if(this.watermark) {
+			this.watermark.destroy();
 		}
-		this.icon = this.get_icon(this.manager.icon_name, this.manager.icon_size);
-		this.actor.set_child(this.icon);
+		this.watermark = this.get_watermark(this.manager.path_name, this.manager.size);
+		this.actor.set_child(this.watermark);
 
-		this.actor.set_opacity(this.manager.icon_alpha * 255 / 100);
+		this.actor.set_opacity(this.manager.alpha * 255 / 100);
 	},
 
 	update_position: function() {
@@ -118,24 +118,24 @@ Watermark.prototype = {
 		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
-	get_icon: function(icon, size) {
-		if(Gtk.IconTheme.get_default().has_icon(icon)) { // Icon name
+	get_watermark: function(path_name, size) {
+		if(Gtk.IconTheme.get_default().has_icon(path_name)) { // Icon name
 			let icon_size = this.manager.use_custom_size ? size : DEFAULT_ICON_SIZE;
-			return new St.Icon({ icon_name: icon, icon_size, icon_type: St.IconType.SYMBOLIC });
+			return new St.Icon({ icon_name: path_name, icon_size, icon_type: St.IconType.SYMBOLIC });
 		} else { // Image path
-			if(GLib.file_test(icon, GLib.FileTest.IS_REGULAR)) {
-				let image = this.get_image(icon, size);
+			if(GLib.file_test(path_name, GLib.FileTest.IS_REGULAR)) {
+				let image = this.get_image(path_name, size);
 				if(image) return image;
 			}
 
-			let xlet_icon = this.manager.meta.path + '/icons/' + icon.toLowerCase().replace(' ', '-') + '-symbolic.svg';
-			if(GLib.file_test(xlet_icon, GLib.FileTest.IS_REGULAR)) {
-				let image = this.get_image(xlet_icon, size);
+			let xlet_path = this.manager.meta.path + '/icons/' + path_name.toLowerCase().replace(' ', '-') + '-symbolic.svg';
+			if(GLib.file_test(xlet_path, GLib.FileTest.IS_REGULAR)) {
+				let image = this.get_image(xlet_path, size);
 				if(image) return image;
 			}
 		}
 
-		global.logError(this.manager.meta.uuid + ": watermark file not found (" + icon + ")");
+		global.logError(this.manager.meta.uuid + ": watermark file not found (" + path_name + ")");
 		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size: DEFAULT_ICON_SIZE, icon_type: St.IconType.SYMBOLIC });
 	},
 
