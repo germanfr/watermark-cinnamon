@@ -127,7 +127,7 @@ Watermark.prototype = {
 				if(image) return image;
 			}
 
-			let xlet_path = this.manager.meta.path + '/icons/' + path_name.toLowerCase().replace(' ', '-') + '-symbolic.svg';
+			let xlet_path = this.manager.meta.path + '/icons/' + path_name.toLowerCase().replace(' ', '-') + '.svg';
 			if(GLib.file_test(xlet_path, GLib.FileTest.IS_REGULAR)) {
 				let image = this.get_image(xlet_path, size);
 				if(image) return image;
