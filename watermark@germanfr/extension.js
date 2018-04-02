@@ -43,10 +43,11 @@ MyExtension.prototype = {
 	enable: function() {
 		this.settings = new Settings.ExtensionSettings(this, this.meta.uuid);
 		this.settings.bind('icon-name', 'icon_name', this.on_settings_updated);
-		this.settings.bind('scale', 'scale', this.on_settings_updated);
+		this.settings.bind('icon-alpha', 'icon_alpha', this.on_settings_updated);
 		this.settings.bind('position-x', 'position_x', this.on_settings_updated);
 		this.settings.bind('position-y', 'position_y', this.on_settings_updated);
-		this.settings.bind('icon-alpha', 'icon_alpha', this.on_settings_updated);
+		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
+		this.settings.bind('icon-size', 'icon_size', this.on_settings_updated);
 
 		// FIXME: Not firing!
 		this.monitorsChangedId = global.screen.connect('monitors-changed', () => {
@@ -105,7 +106,7 @@ Watermark.prototype = {
 		if(this.icon) {
 			this.icon.destroy();
 		}
-		this.icon = this.get_icon(this.manager.icon_name, this.manager.scale);
+		this.icon = this.get_icon(this.manager.icon_name, this.manager.icon_size);
 		this.actor.set_child(this.icon);
 
 		this.actor.set_opacity(this.manager.icon_alpha * 255 / 100);
@@ -117,19 +118,19 @@ Watermark.prototype = {
 		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
-	get_icon: function(icon, scale) {
+	get_icon: function(icon, size) {
 		if(Gtk.IconTheme.get_default().has_icon(icon)) { // Icon name
-			let icon_size = Math.floor(DEFAULT_ICON_SIZE * scale / 100);
+			let icon_size = this.manager.use_custom_size ? size : DEFAULT_ICON_SIZE;
 			return new St.Icon({ icon_name: icon, icon_size, icon_type: St.IconType.SYMBOLIC });
 		} else { // Image path
 			if(GLib.file_test(icon, GLib.FileTest.IS_REGULAR)) {
-				let image = this.get_image(icon, scale);
+				let image = this.get_image(icon, size);
 				if(image) return image;
 			}
 
 			let xlet_icon = this.manager.meta.path + '/icons/' + icon.toLowerCase().replace(' ', '-') + '-symbolic.svg';
 			if(GLib.file_test(xlet_icon, GLib.FileTest.IS_REGULAR)) {
-				let image = this.get_image(xlet_icon, scale);
+				let image = this.get_image(xlet_icon, size);
 				if(image) return image;
 			}
 		}
@@ -138,23 +139,27 @@ Watermark.prototype = {
 		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size: DEFAULT_ICON_SIZE, icon_type: St.IconType.SYMBOLIC });
 	},
 
-	get_image: function(path, scale) {
+	get_image: function(path, size) {
 		let pixbuf;
 		try {
-			pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+			if(this.manager.use_custom_size)
+				pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, size, size);
+			else
+				pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
 		} catch(e) {
 			return null;
 		}
 
-		let height = Math.floor(pixbuf.get_height() * scale / 100);
-		let width = Math.round(height * pixbuf.get_width() / pixbuf.get_height());
 		let image = new Clutter.Image();
 		image.set_data(pixbuf.get_pixels(),
 		               pixbuf.get_has_alpha() ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,
 		               pixbuf.get_width(),
 		               pixbuf.get_height(),
 		               pixbuf.get_rowstride());
-		return new Clutter.Actor({ content: image, width, height });
+
+		return new Clutter.Actor({ content: image,
+		                           width: pixbuf.get_width(),
+		                           height: pixbuf.get_height() });
 	},
 
 	destroy: function() {
