@@ -1,4 +1,4 @@
-# Watermark - A Cinnamon extension
+# [Watermark - A Cinnamon extension][repo]
 
 Place a watermark on the desktop
 
@@ -9,8 +9,20 @@ Place a watermark on the desktop
  * Manjaro
  * Manjaro Text (Manjaro logo with text)
  * Arch
+ * Linux Mint
+ * Debian
  * All Gtk icons, including *start-here*
  * Virtually **any image from a custom location**
+
+## Install
+#### From the Cinnamon settings
+Just go to `System Settings > Extensions` and search for this there.
+
+#### From the Cinnamon Spices website
+Go to [the Cinnamon Spices website][spices], download the package and extract the contents into `~/.local/share/cinnamon/extensions`.
+
+### From source
+Download the sources from [here][repo] and copy, move or link the `watermark@germanfr` folder into `~/.local/share/cinnamon/extensions`.
 
 ## Changelog
 See the list of changes on Github:  [https://github.com/germanfr/watermark-cinnamon/commits/master][commits].
@@ -51,3 +63,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [commits]: https://github.com/germanfr/watermark-cinnamon/commits/master
 [issues]: https://github.com/germanfr/watermark-cinnamon/issues
 [releases]: https://github.com/germanfr/watermark-cinnamon/releases
+[spices]: https://cinnamon-spices.linuxmint.com/extensions/view/46
