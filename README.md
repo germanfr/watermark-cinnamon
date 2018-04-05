@@ -12,6 +12,7 @@ Place a watermark on the desktop
  * Linux Mint
  * Debian
  * Antergos
+ * Ubuntu
  * All Gtk icons, including *start-here*
  * Virtually **any image from a custom location**
 
