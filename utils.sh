@@ -158,6 +158,7 @@ submit_to_spices () {
     git commit -m "Update $name v$version ($UUID)
 
 Changelog at: $url/commits/master"
+    git push -fu origin "$UUID"
 }
 
 
