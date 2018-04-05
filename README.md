@@ -11,6 +11,7 @@ Place a watermark on the desktop
  * Arch
  * Linux Mint
  * Debian
+ * Antergos
  * All Gtk icons, including *start-here*
  * Virtually **any image from a custom location**
 
