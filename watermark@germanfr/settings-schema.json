@@ -48,9 +48,9 @@
 	},
 
 	"use-custom-size": {
-	    "type": "switch",
-	    "description": "Use a custom size, scaling the image",
-	    "default": false
+		"type": "switch",
+		"description": "Use a custom size, scaling the image",
+		"default": false
 	},
 
 	"size": {
@@ -62,5 +62,10 @@
 		"step": 1,
 		"units": "px",
 		"dependency": "use-custom-size"
+	},
+
+	"first-launch": {
+		"type": "generic",
+		"default": true
 	}
 }

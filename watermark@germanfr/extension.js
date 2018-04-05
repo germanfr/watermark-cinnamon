@@ -25,6 +25,7 @@ const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const St = imports.gi.St;
+const Util = imports.misc.util;
 
 const ERROR_ICON_NAME = 'face-sad-symbolic';
 const DEFAULT_ICON_SIZE = 128;
@@ -54,6 +55,11 @@ MyExtension.prototype = {
 			this._init_watermarks();
 		});
 
+		if(this.settings.getValue('first-launch')) {
+			this.settings.setValue('first-launch', false);
+			this._detect_os();
+		}
+
 		this._init_watermarks();
 	},
 
@@ -79,6 +85,16 @@ MyExtension.prototype = {
 	on_settings_updated: function() {
 		for(let wm of this.watermarks)
 			wm.update();
+	},
+
+	_detect_os: function() {
+		let cmd = [this.meta.path + '/os-detection.sh', this.meta.path + '/icons'];
+		Util.spawn_async(cmd, os_name => {
+			if(os_name)
+				this.path_name = os_name;
+			if(this.watermarks.length > 0)
+			    this.on_settings_updated();
+		});
 	}
 };
 
