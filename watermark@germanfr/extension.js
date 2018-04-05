@@ -73,6 +73,7 @@ MyExtension.prototype = {
 
 	disable: function() {
 		this._clear_watermarks();
+		global.screen.disconnect(this.monitorsChangedId);
 	},
 
 	on_settings_updated: function() {
