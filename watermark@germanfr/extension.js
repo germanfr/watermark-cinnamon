@@ -90,10 +90,10 @@ MyExtension.prototype = {
 	_detect_os: function() {
 		let cmd = [this.meta.path + '/os-detection.sh', this.meta.path + '/icons'];
 		Util.spawn_async(cmd, os_name => {
-			if(os_name)
+			if(os_name) {
 				this.path_name = os_name;
-			if(this.watermarks.length > 0)
-			    this.on_settings_updated();
+				this.on_settings_updated();
+			}
 		});
 	}
 };
