@@ -38,6 +38,7 @@ package_files=(
     "$UUID/icon.png"
     "$UUID/icon.svg"
     "$UUID/stylesheet.css"
+    "$UUID/os-detection.sh"
 )
 
 # Files that need to be moved into the $UUID folder
