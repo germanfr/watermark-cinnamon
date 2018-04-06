@@ -24,7 +24,7 @@ Just go to `System Settings > Extensions` and search for this there.
 Go to [the Cinnamon Spices website][spices], download the package and extract the contents into `~/.local/share/cinnamon/extensions`.
 
 ### From source
-Download the sources from [here][repo] and copy, move or link the `watermark@germanfr` folder into `~/.local/share/cinnamon/extensions`.
+Download the sources from [here][repo] and run `./utils.sh --install`. If it doesn't work, do it manually: copy, move or link the `watermark@germanfr` folder into `~/.local/share/cinnamon/extensions`.
 
 ## Changelog
 See the list of changes on Github:  [https://github.com/germanfr/watermark-cinnamon/commits/master][commits].
