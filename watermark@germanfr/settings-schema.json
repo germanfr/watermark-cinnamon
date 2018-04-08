@@ -19,6 +19,13 @@
 		"step": 1
 	},
 
+	"invert": {
+		"type": "switch",
+		"description": "Invert colors",
+		"default": false,
+		"tooltip": "This completely inverts the image colors. Useful on light backgrounds."
+	},
+
 	"section1": {
 		"type": "section",
 		"description": "Position"
