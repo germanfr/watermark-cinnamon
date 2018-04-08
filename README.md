@@ -37,6 +37,9 @@ Make sure you have an updated version of Cinnamon and try to explain the more de
 
 Please, do not post issues in the comments of the Cinnamon Spices website because it doesn't have a notification system and I rarely see it.
 
+## Contributing
+Contributions are welcome, also in form of translations. Please, submit pull requests [to the repository][repo] not the spices repository, which is only a distribution channel (not even a mirror). What is in there is automatically generated and overwritten.
+
 ## License
 This extension is free software and it's licensed under GPL3.
 You should have received an unobfuscated copy of the source code. If you don't, you can get it on [https://github.com/germanfr/watermark-cinnamon][repo].
