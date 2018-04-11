@@ -8,8 +8,12 @@ json_prop () {
     python3 -c "import sys, json; print(json.load(sys.stdin)['$1']);"
 }
 
-metadata=$(find . -name metadata.json -print -quit)
-UUID=$(cat "$metadata" | json_prop 'uuid')
+metadata=$(find . -name 'metadata.json' -print -quit)
+get_xlet_meta () {
+	json_prop $1 < $metadata
+}
+
+UUID=$(get_xlet_meta uuid)
 
 if [ -e "$UUID/extension.js" ]; then xlet_type='extension'
 elif [ -e "$UUID/applet.js" ]; then xlet_type='applet'
@@ -23,30 +27,20 @@ fi
 
 install_dir="$HOME/.local/share/${xlet_type}s"
 
-assets_dir='icons'
+zip_name="${UUID}.zip"
 
-zip_name="$UUID.zip"
-
-# Relative to the project's root
-package_files=(
+COMMON_FILES=(
     "$UUID/${xlet_type}.js"
-    $(find $UUID -name *.js)
     "$UUID/metadata.json"
     "$UUID/settings-schema.json"
     "$UUID/po/"
     "$UUID/icons/"
     "$UUID/icon.png"
-    "$UUID/icon.svg"
     "$UUID/stylesheet.css"
-    "$UUID/os-detection.sh"
 )
 
-# Files that need to be moved into the $UUID folder
-extra_files=(
-    'LICENSE'
-    'README.md'
-    'screenshot.png'
-)
+# Load options (files that will be packaged)
+. ./pkg-options
 
 # ======================================
 #  Operations
@@ -67,19 +61,21 @@ install_theme () {
         rm -rf "$install_dir/$UUID"
         unzip $zip_name -d "$install_dir"
         rm $zip_name
-
-        cinnamon-settings ${xlet_type}s &> /dev/null
     fi
 
-    echo "Xlet installed into $install_dir"
+    cd "$UUID"
+    cinnamon-json-makepot -i
+
+    echo "${xlet_type^} installed into $install_dir"
 }
 
 spices_package () {
     rm -f "$zip_name"
-    zip -r --symlinks "$zip_name" "${package_files[@]}"
+    echo ${PACKAGE_FILES[@]}
+    zip -r --symlinks "$zip_name" ${COMMON_FILES[@]} ${PACKAGE_FILES[@]/#/${UUID}\/}
 
-    for ef in ${extra_files[@]} ;do
-        local filename=`basename $ef`
+    for ef in ${EXTRA_FILES[@]} ;do
+        local filename=$(basename $ef)
         ln -rfs "$ef" "$UUID/$filename"
         zip -r "$zip_name" "$UUID/$filename"
         rm -rf "$UUID/$filename"
@@ -89,6 +85,11 @@ spices_package () {
 }
 
 simplify_assets () {
+	if [[ -z "$ASSETS_DIR" ]]; then
+		echo "No assets folder in this $xlet_type"
+		return
+	fi
+
     simplify () {
         scour -i "$1" -o "$2"\
             --remove-metadata \
@@ -115,7 +116,7 @@ simplify_assets () {
 
         # temp dir for the output (can't output to self)
         local tmp_dir=$(mktemp -d)
-        local assets_list=$(find $assets_dir/ -name '*.svg')
+        local assets_list=$(find $ASSETS_DIR/ -name '*.svg')
         local n_assets=$(echo "$assets_list" | wc -l)
         local completed=0
 
@@ -138,9 +139,9 @@ simplify_assets () {
 }
 
 submit_to_spices () {
-    local url=$(cat "$metadata" | json_prop 'url')
-    local name=$(cat "$metadata" | json_prop 'name')
-    local version=$(cat "$metadata" | json_prop 'version')
+    local url=$(get_xlet_meta url)
+    local name=$(get_xlet_meta name)
+    local version=$(get_xlet_meta version)
     spices_package &> /dev/null
     mv "$zip_name" "../spices-${xlet_type}s/$UUID/"
     cd "../spices-${xlet_type}s/$UUID/"
@@ -159,30 +160,36 @@ submit_to_spices () {
     git commit -m "Update $name v$version ($UUID)
 
 Changelog at: $url/commits/master"
-    git push -fu origin "$UUID"
+
+    echo -n 'Push changes (git push)? [y/n] '
+    read confirm
+    if [[ $confirm =~ ^([yY]([eE][sS])?)?$ ]]
+        then git push -fu origin $UUID
+    fi
 }
 
 
 show_help () {
     local bold=$(tput bold)
     local normal=$(tput sgr0)
+    local name=$(get_xlet_meta name)
 
     echo "\
-${bold}USAGE${normal}
-    ./$(basename $0) --OPTION
+${bold}${name^^} ${xlet_type^^} HELP${normal}
+Usage: ./$(basename $0) [--COMMAND]
 
-${bold}OPTIONS${normal}
+${bold}COMMANDS${normal}
   --install [dev]   Install the theme into the system.
                     Add 'dev' to just create a symbolic link to here.
 
-${bold}DEVELOPMENT OPTIONS${normal}
+  --help            Show help.
+
+${bold}DEVELOPMENT COMMANDS${normal}
 
   --pkg             Package files ready to be uploaded to the Cinnamon Spices.
 
   --simplify        Optimize SVG assets for a smaller size and a better theme
                     performance stripping metadata and other stuff.
-
-  --help            Show help.
 "
 }
 
