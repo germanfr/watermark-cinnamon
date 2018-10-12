@@ -63,9 +63,9 @@ MyExtension.prototype = {
 		});
 
 		let on_desktop_size_changed = this.on_desktop_size_changed.bind(this);
-		this._signals.connect(global.settings, 'changed::panels-height', on_desktop_size_changed);
-		this._signals.connect(global.settings, 'changed::panels-resizable', on_desktop_size_changed);
-		this._signals.connect(global.settings, 'changed::panels-enabled', on_desktop_size_changed);
+		for (let prop of ['enabled', 'height', 'resizable', 'autohide']) {
+			this._signals.connect(global.settings, 'changed::panels-'+prop, on_desktop_size_changed);
+		}
 
 		if(this.settings.getValue('first-launch')) {
 			this.settings.setValue('first-launch', false);
@@ -159,6 +159,10 @@ Watermark.prototype = {
 		for (let panel of Main.getPanels()) {
 			if (!panel || panel.monitorIndex !== this.monitor.index)
 				continue;
+
+			if (panel._autohideSettings == "true")
+				continue;
+
 			switch (panel.panelPosition) {
 				case PanelLoc.top:
 					y += panel.actor.height;
