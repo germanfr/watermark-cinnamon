@@ -50,8 +50,10 @@ MyExtension.prototype = {
 		this.settings.bind('path-name', 'path_name', this.on_settings_updated);
 		this.settings.bind('alpha', 'alpha', this.on_settings_updated);
 		this.settings.bind('invert', 'invert', this.on_settings_updated);
-		this.settings.bind('position-x', 'position_x', this.on_settings_updated);
-		this.settings.bind('position-y', 'position_y', this.on_settings_updated);
+		this.settings.bind('position-x', 'position_x', this.on_desktop_size_changed);
+		this.settings.bind('position-y', 'position_y', this.on_desktop_size_changed);
+		this.settings.bind('margin-x', 'margin_x', this.on_desktop_size_changed);
+		this.settings.bind('margin-y', 'margin_y', this.on_desktop_size_changed);
 		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
 		this.settings.bind('size', 'size', this.on_settings_updated);
 
@@ -146,6 +148,13 @@ Watermark.prototype = {
 
 	get_desktop_geometry: function() {
 		let { x, y, width, height} = this.monitor;
+
+		let margin_x = this.manager.margin_x;
+		let margin_y = this.manager.margin_y;
+		x += margin_x;
+		y += margin_y;
+		width -= 2 * margin_x;
+		height -= 2 * margin_y;
 
 		for (let panel of Main.getPanels()) {
 			if (!panel || panel.monitorIndex !== this.monitor.index)
