@@ -176,9 +176,14 @@ Watermark.prototype = {
 	},
 
 	update_position: function() {
-		let box = this.get_desktop_geometry();
+		let desktop = this.get_desktop_geometry();
+		let box;
+
+		box = this.manager.position_x === 50 ? this.monitor : desktop;
 		let x = box.x + (box.width - this.actor.width) * this.manager.position_x / 100;
+		box = this.manager.position_y === 50 ? this.monitor : desktop;
 		let y = box.y + (box.height - this.actor.height) * this.manager.position_y / 100;
+
 		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
