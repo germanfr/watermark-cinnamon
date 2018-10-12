@@ -23,7 +23,6 @@ const GdkPixbuf = imports.gi.GdkPixbuf;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
-const Mainloop = imports.mainloop;
 const { PanelLoc } = imports.ui.panel;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
