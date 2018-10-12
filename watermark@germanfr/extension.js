@@ -23,7 +23,10 @@ const GdkPixbuf = imports.gi.GdkPixbuf;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
+const { PanelLoc } = imports.ui.panel;
 const Settings = imports.ui.settings;
+const SignalManager = imports.misc.signalManager;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 
@@ -39,6 +42,7 @@ MyExtension.prototype = {
 	_init: function (meta) {
 		this.meta = meta;
 		this.watermarks = [];
+		this._signals = new SignalManager.SignalManager(null)
 	},
 
 	enable: function() {
@@ -51,10 +55,15 @@ MyExtension.prototype = {
 		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
 		this.settings.bind('size', 'size', this.on_settings_updated);
 
-		this.monitorsChangedId = global.screen.connect('monitors-changed', () => {
+		this._signals.connect(global.screen, 'monitors-changed', () => {
 			this._clear_watermarks();
 			this._init_watermarks();
 		});
+
+		let on_desktop_size_changed = this.on_desktop_size_changed.bind(this);
+		this._signals.connect(global.settings, 'changed::panels-height', on_desktop_size_changed);
+		this._signals.connect(global.settings, 'changed::panels-resizable', on_desktop_size_changed);
+		this._signals.connect(global.settings, 'changed::panels-enabled', on_desktop_size_changed);
 
 		if(this.settings.getValue('first-launch')) {
 			this.settings.setValue('first-launch', false);
@@ -80,7 +89,12 @@ MyExtension.prototype = {
 
 	disable: function() {
 		this._clear_watermarks();
-		global.screen.disconnect(this.monitorsChangedId);
+		this._signals.disconnectAll();
+	},
+
+	on_desktop_size_changed: function () {
+		for (let wm of this.watermarks)
+			wm.update_position();
 	},
 
 	on_settings_updated: function() {
@@ -130,9 +144,32 @@ Watermark.prototype = {
 		this.actor.style = this.manager.invert ? 'color: black' : 'color: white';
 	},
 
+	get_desktop_geometry: function() {
+		let { x, y, width, height} = this.monitor;
+
+		for (let panel of Main.getPanels()) {
+			if (!panel || panel.monitorIndex !== this.monitor.index)
+				continue;
+			switch (panel.panelPosition) {
+				case PanelLoc.top:
+					y += panel.actor.height;
+				case PanelLoc.bottom:
+					height -= panel.actor.height;
+					break;
+				case PanelLoc.left:
+					x += panel.actor.width;
+				case PanelLoc.right:
+					width -= panel.actor.width;
+					break;
+			}
+		}
+		return { x, y, width, height };
+	},
+
 	update_position: function() {
-		let x = this.monitor.x + (this.monitor.width - this.actor.width) * this.manager.position_x / 100;
-		let y = this.monitor.y + (this.monitor.height - this.actor.height) * this.manager.position_y / 100;
+		let box = this.get_desktop_geometry();
+		let x = box.x + (box.width - this.actor.width) * this.manager.position_x / 100;
+		let y = box.y + (box.height - this.actor.height) * this.manager.position_y / 100;
 		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
