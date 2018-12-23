@@ -4,10 +4,27 @@
 		"description": "Appearance"
 	},
 
-	"path-name": {
+	"icon": {
+		"type": "combobox",
+		"description" : "Watermark logo",
+		"default": "cinnamon",
+		"options": {
+			"Cinnamon": "cinnamon",
+			"Antergos": "antergos",
+			"Arch": "arch",
+			"Debian": "debian",
+			"Linux": "linux",
+			"Linux Mint": "linuxmint",
+			"Manjaro": "manjaro",
+			"Manjaro (with text)": "manjaro-text",
+			"Custom...": "other"
+		}
+	},
+
+	"custom-icon": {
 		"type": "iconfilechooser",
-		"description": "Watermark icon or image",
-		"default": "Cinnamon"
+		"description": "Custom icon or image",
+		"default": "start-here-symbolic"
 	},
 
 	"alpha": {

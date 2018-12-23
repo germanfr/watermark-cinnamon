@@ -46,7 +46,8 @@ MyExtension.prototype = {
 
 	enable: function() {
 		this.settings = new Settings.ExtensionSettings(this, this.meta.uuid);
-		this.settings.bind('path-name', 'path_name', this.on_settings_updated);
+		this.settings.bind('icon', 'icon', this.on_settings_updated);
+		this.settings.bind('custom-icon', 'custom_icon', this.on_settings_updated);
 		this.settings.bind('alpha', 'alpha', this.on_settings_updated);
 		this.settings.bind('invert', 'invert', this.on_settings_updated);
 		this.settings.bind('position-x', 'position_x', this.on_desktop_size_changed);
@@ -107,8 +108,9 @@ MyExtension.prototype = {
 		let cmd = [this.meta.path + '/os-detection.sh', this.meta.path + '/icons'];
 		Util.spawn(['chmod', 'u+x', cmd[0]]); // Cinnamon < 3.8
 		Util.spawn_async(cmd, os_name => {
-			if(os_name) {
-				this.path_name = os_name;
+			if (os_name) {
+				this.settings.setValue('icon', os_name);
+				// The handler is not automatically called here
 				this.on_settings_updated();
 			}
 		});
@@ -138,7 +140,8 @@ Watermark.prototype = {
 		if(this.watermark) {
 			this.watermark.destroy();
 		}
-		this.watermark = this.get_watermark(this.manager.path_name, this.manager.size * global.ui_scale);
+
+		this.watermark = this.get_watermark();
 		this.actor.set_child(this.watermark);
 
 		this.actor.set_opacity(this.manager.alpha * 255 / 100);
@@ -190,25 +193,28 @@ Watermark.prototype = {
 		this.actor.set_position(Math.floor(x), Math.floor(y));
 	},
 
-	get_watermark: function(path_name, size) {
-		if(GLib.file_test(path_name, GLib.FileTest.IS_REGULAR)) {
-			let image = this.get_image(path_name, size);
-			if(image) return image;
+	get_watermark: function () {
+		let size = this.manager.size * global.ui_scale;
+		let path_or_name = this.manager.icon != 'other' ? this.manager.icon : this.manager.custom_icon;
+
+		if (GLib.file_test(path_or_name, GLib.FileTest.IS_REGULAR)) {
+			let image = this.get_image(path_or_name, size);
+			if (image) return image;
 		}
 
-		let xlet_path = this.manager.meta.path + '/icons/' + path_name.toLowerCase().replace(' ', '-') + '.svg';
-		if(GLib.file_test(xlet_path, GLib.FileTest.IS_REGULAR)) {
+		let xlet_path = this.manager.meta.path + '/icons/' + path_or_name + '.svg';
+		if (GLib.file_test(xlet_path, GLib.FileTest.IS_REGULAR)) {
 			let image = this.get_image(xlet_path, size);
-			if(image) return image;
+			if (image) return image;
 		}
 
-		let icon_name = path_name.endsWith('-symbolic') ? path_name : path_name + '-symbolic';
-		if(Gtk.IconTheme.get_default().has_icon(icon_name)) { // Icon name
+		let icon_name = path_or_name.endsWith('-symbolic') ? path_or_name : path_or_name + '-symbolic';
+		if (Gtk.IconTheme.get_default().has_icon(icon_name)) { // Icon name
 			let icon_size = this.manager.use_custom_size ? size : DEFAULT_ICON_SIZE;
 			return new St.Icon({ icon_name, icon_size, icon_type: St.IconType.SYMBOLIC });
 		}
 
-		global.logError(this.manager.meta.uuid + ": watermark file not found (" + path_name + ")");
+		global.logError(this.manager.meta.uuid + ": watermark file not found (" + path_or_name + ")");
 		return new St.Icon({ icon_name: ERROR_ICON_NAME, icon_size: DEFAULT_ICON_SIZE, icon_type: St.IconType.SYMBOLIC });
 	},
 
