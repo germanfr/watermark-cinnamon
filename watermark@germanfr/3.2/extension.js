@@ -90,7 +90,7 @@ MyExtension.prototype = {
 
 	disable: function() {
 		this._clear_watermarks();
-		this._signals.disconnectAll();
+		this._signals.disconnectAllSignals();
 	},
 
 	on_desktop_size_changed: function () {
