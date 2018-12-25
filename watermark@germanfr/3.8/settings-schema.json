@@ -67,7 +67,8 @@
 		"min": 0,
 		"max": 512,
 		"step": 1,
-		"units": "px"
+		"units": "px",
+		"dependency": "position-x!=50"
 	},
 
 	"position-y": {
@@ -88,7 +89,8 @@
 		"min": 0,
 		"max": 512,
 		"step": 1,
-		"units": "px"
+		"units": "px",
+		"dependency": "position-y!=50"
 	},
 
 	"section2": {
