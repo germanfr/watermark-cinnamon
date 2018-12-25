@@ -28,6 +28,7 @@ const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const St = imports.gi.St;
 const Util = imports.misc.util;
+const Mainloop = imports.mainloop;
 
 const ERROR_ICON_NAME = 'face-sad-symbolic';
 const DEFAULT_ICON_SIZE = 128;
@@ -41,7 +42,8 @@ MyExtension.prototype = {
 	_init: function (meta) {
 		this.meta = meta;
 		this.watermarks = [];
-		this._signals = new SignalManager.SignalManager(null)
+		this._signals = new SignalManager.SignalManager(null);
+		this._timeoutid = 0;
 	},
 
 	enable: function() {
@@ -56,6 +58,7 @@ MyExtension.prototype = {
 		this.settings.bind('margin-y', 'margin_y', this.on_desktop_size_changed);
 		this.settings.bind('use-custom-size', 'use_custom_size', this.on_settings_updated);
 		this.settings.bind('size', 'size', this.on_settings_updated);
+		this.settings.bind('first-launch', 'first_launch', () => this._detect_os(true));
 
 		this._signals.connect(global.screen, 'monitors-changed', () => {
 			this._clear_watermarks();
@@ -67,12 +70,8 @@ MyExtension.prototype = {
 			this._signals.connect(global.settings, 'changed::panels-'+prop, on_desktop_size_changed);
 		}
 
-		if(this.settings.getValue('first-launch')) {
-			this.settings.setValue('first-launch', false);
-			this._detect_os();
-		}
-
 		this._init_watermarks();
+		this._detect_os();
 	},
 
 	_init_watermarks: function() {
@@ -100,12 +99,19 @@ MyExtension.prototype = {
 	},
 
 	on_settings_updated: function() {
+		if (this._timeoutid) {
+			Mainloop.source_remove(this._timeoutid);
+			this._timeoutid = 0;
+		}
+
 		for(let wm of this.watermarks)
 			wm.update();
 	},
 
 	// Detect the running os and set the icon value. Does nothing on failure.
-	_detect_os: function () {
+	_detect_os: function (is_reset) {
+		if (!this.first_launch)
+			return;
 
 		// this.settings.setValue('first-launch', false);
 		Util.spawn_async(['cat','/etc/os-release'], content => {
@@ -117,11 +123,35 @@ MyExtension.prototype = {
 			// If we have an icon for this os name
 			let icon_path = this.meta.path + '/icons/' + os_name + '.svg';
 			if (GLib.file_test(icon_path, GLib.FileTest.IS_REGULAR)) {
-				this.settings.setValue('icon', os_name);
-				// The handler is not automatically called here
-				this.on_settings_updated();
+				this._on_os_detected(os_name, is_reset);
 			}
 		});
+	},
+
+	_on_os_detected: function (os_name, is_reset) {
+		if (this._timeoutid) {
+			Mainloop.source_remove(this._timeoutid);
+			this._timeoutid = 0;
+		}
+
+		if (is_reset) {
+			/* We need to wait more than 2000ms, that is the time the
+			  settings module wait to start listening to changes to the
+			  json settings file after a write from its part. Otherwise
+			  any changes made from here are ignored and overwritten in
+			  future updates. See this line: https://github.com/linuxmint/Cinnamon/blob/2499b0920ddbc86692f89cb54777486005add497/files/usr/share/cinnamon/cinnamon-settings/bin/JsonSettingsWidgets.py#L165
+			*/
+			this._timeoutid = Mainloop.timeout_add(2100, () => {
+				this._on_os_detected(os_name, false);
+				return false; // Stop repeating
+			});
+		} else {
+			this.first_launch = false;
+			this.icon = os_name;
+			// The handler is not automatically called
+			this.on_settings_updated();
+		}
+
 	}
 };
 
