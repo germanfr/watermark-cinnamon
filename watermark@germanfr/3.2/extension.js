@@ -104,11 +104,19 @@ MyExtension.prototype = {
 			wm.update();
 	},
 
-	_detect_os: function() {
-		let cmd = [this.meta.path + '/os-detection.sh', this.meta.path + '/icons'];
-		Util.spawn(['chmod', 'u+x', cmd[0]]); // Cinnamon < 3.8
-		Util.spawn_async(cmd, os_name => {
-			if (os_name) {
+	// Detect the running os and set the icon value. Does nothing on failure.
+	_detect_os: function () {
+
+		// this.settings.setValue('first-launch', false);
+		Util.spawn_async(['cat','/etc/os-release'], content => {
+			let match = content.match(/^ID=(\w+)$/m);
+			if (!match)
+			return;
+			let os_name = match[1];
+
+			// If we have an icon for this os name
+			let icon_path = this.meta.path + '/icons/' + os_name + '.svg';
+			if (GLib.file_test(icon_path, GLib.FileTest.IS_REGULAR)) {
 				this.settings.setValue('icon', os_name);
 				// The handler is not automatically called here
 				this.on_settings_updated();
