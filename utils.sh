@@ -15,12 +15,18 @@ get_xlet_meta () {
 	json_prop $1 < $metadata
 }
 
+get_xlet_type () {
+    file=$(find . -regextype posix-extended -regex ".*/(extension|applet|desklet).js" -print -quit)
+    echo $file | grep -o -E '(extension|applet|desklet)'
+}
+
+
 UUID=$(get_xlet_meta uuid)
 
-if [ -e "$UUID/extension.js" ]; then xlet_type='extension'
-elif [ -e "$UUID/applet.js" ]; then xlet_type='applet'
-elif [ -e "$UUID/desklet.js" ]; then xlet_type='desklet'
-else echo "Missing xlet Javascript files" && exit 1
+xlet_type=$(get_xlet_type)
+if [ -z "$xlet_type" ]; then
+    echo "Missing xlet Javascript files"
+    exit 1
 fi
 
 # ======================================
@@ -39,6 +45,7 @@ COMMON_FILES=(
     "$UUID/icons/"
     "$UUID/icon.png"
     "$UUID/stylesheet.css"
+    $(find * -mindepth 2 -regextype posix-extended -regex ".*[1-9][0-9]*\.[0-9]+(\.[0-9]+)?/.*") # Files inside version folders
 )
 
 # Load options (files that will be packaged)
@@ -75,6 +82,9 @@ spices_package () {
     rm -f "$zip_name"
 
     local all_files="${COMMON_FILES[@]} ${PACKAGE_FILES[@]/#/${UUID}\/}"
+    # Remove duplcates
+    all_files=$(echo $all_files | tr ' ' '\n' | sort -u)
+
     zip -r --symlinks "$zip_name" $all_files
 
     for ef in "${EXTRA_FILES[@]}"; do
