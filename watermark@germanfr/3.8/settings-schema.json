@@ -17,6 +17,7 @@
 			"Linux Mint": "linuxmint",
 			"Manjaro": "manjaro",
 			"Manjaro (with text)": "manjaro-text",
+			"Activate Windows": "activate-windows",
 			"Custom...": "other"
 		}
 	},
